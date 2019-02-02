@@ -36,8 +36,8 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 //connection to database
-// mongoose.connect("mongodb://admin:chatadmin1@ds113765.mlab.com:13765/chatapp");
-mongoose.connect("mongodb://localhost:27017/newChatData",{ useNewUrlParser: true })
+mongoose.connect("mongodb://admin:chatadmin1@ds113765.mlab.com:13765/chatapp");
+// mongoose.connect("mongodb://localhost:27017/newChatData",{ useNewUrlParser: true })
 
 
 //index - onload
