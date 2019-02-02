@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Let's Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="/bootstrap/dist/css/bootstrap.css" />
+    <script type="text/javascript" src="bootstrap/dist/js/jquery-3.2.1.js"></script>
+    <script type="text/javascript" src="bootstrap/dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="/animate.css">
+    <link href="/css/mdb.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/mobileui/style.css">
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+</head>
+<style>
+    .skewed{
+        transform: skewY(7deg);
+        height: 50vh;
+        background: rgb(14, 96, 190);
+        width: 100%;
+        margin-top: -100px;
+    }
+    .mid-container{
+        border-radius: 5px;
+        border: 3px solid rgb(14, 96, 190);
+        min-height: 100vh;
+        background: white;
+        margin: -16.5% auto;
+    }
+    hr{
+        border-color: rgb(14, 96, 190);
+        opacity: 0.5;
+    }
+    tr{
+        cursor: pointer
+    }
+
+    .messaging{
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgb(15, 161, 209); 
+    }
+    #chats::-webkit-scrollbar{
+        width: 1em
+    }
+  
+   
+    
+</style>
+<body>
+    <div class="container-fluid d-md-block d-none">
+        <div class="row">
+            <div class="skewed shadow">
+                
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-11 mid-container shadow bg-dark" style="margin-bottom: 80px">
+                <div class="bg-primary rounded fixed-top shadow text-white" style="text-align: center">
+                    <input type="hidden" id="rcp" value="<%= chatUser[0].phone %>">
+                    <img src="<%= chatUser[0].picture %>" width="60px" height="60px" class="mr-3 rounded-circle" style="border: 3px dotted white">
+                    <%= chatUser[0].fname %> <%= chatUser[0].lname %> 
+                </div>
+                <p id="feedback"></p>
+                <input type="hidden" id="conv" value="<%= convId %>">
+                <input type="hidden" id="user" value="<%= user %>">
+               <div id="chats" style="margin-top: 60px">
+                    <% for(i=0; i<msgList.length; i++){%>
+                        <% if(msgList[i].sender==user){%>
+                        <span class="p-1 rounded shadow-sm text-white bg-primary float-right">
+                            <span ><%= msgList[i].msgC %></span><br>
+                            <span class="text-dark"><small><%= msgList[i].time %></small></span>
+                        </span><br><br><br>
+                    <% } else {%>
+                        <div class="p-1 rounded shadow-sm text-white bg-success float-left">
+                                <span ><%= msgList[i].msgC %></span><br>
+                                <span class="text-dark"><small><%= msgList[i].time %></small></span>
+                        </div><br><br><br>
+                    <% } %>
+                    <% } %>
+                </div>
+                <span id="focus"></span>
+               <div class="messaging">
+                <!-- <textarea class="rounded" id="message"></textarea> -->
+                <button class="btn btn-success" id="send_msg">Send</button>
+               </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-md-none has-header has-footer has-sub-header d-block">
+            
+            <div class="header shadow bg-primary">
+                    <div class="right mt-2 ml-2">
+                           
+                            <img src="/<%=chatUser[0].picture%>"  class="rounded-circle" width="40px" height="40px">
+                        </div>
+                    <h1 class="align-center text-white"> <%= chatUser[0].fname %> <%= chatUser[0].lname %> </h1>
+                    <div class=left mr-4">
+                            <button class="icon ion-arrow-left-c" onclick="window.history.back()"></button>
+                            
+                    </div>  
+            </div>
+            <p id="feedback"></p>
+            <input type="hidden" id="rcp" value="<%= chatUser[0].phone %>">
+            <input type="hidden" id="conv" value="<%= convId %>">
+            <input type="hidden" id="user" value="<%= user %>">
+          
+            <div id="chats" class="mx-1" style="margin-top: -40px;">
+           
+                    <% for(i=0; i<msgList.length; i++){%>
+                        <% if(msgList[i].sender==user){%>
+                        <div class="p-2  border-blue shadow radius mark  blue-50 float-right">
+                            <span ><%= msgList[i].msgC %></span><br>
+                            <span class="text-dark"><small><%= msgList[i].time %></small></span>
+                        </div><br><br><br>
+                      
+                    <% } else {%>
+                        <div class="p-2 border-green shadow radius mark  green-50 float-left">
+                                <span ><%= msgList[i].msgC %></span><br>
+                                <span class="text-dark"><small><%= msgList[i].time %></small></span>
+                        </div><br><br><br>
+                    <% } %>
+                    <% } %>
+              
+                </div>
+
+            <div class="footer p-2 blue-50">
+                    <textarea class="bg-primary float-left pl-3 text-white" style="border-radius:100px;width: 85%;" id="message"></textarea>
+                   <i class="icon bg-white right blue-900 ion-android-send" style="margin-top:0px" onclick="sendmsg()"></i>
+                  </div>
+            </div>
+</body>
+<script type="text/javascript" src="/mobileui/mobileui.js"></script>
+<script>
+    
+  
+        //WITHOUT MY PHONE CONNECTION
+        // var socket = io.connect('http://localhost:5000');
+        //WITH MY PHONE CONNECTION
+        var socket = io();
+        var message = $("#message");
+        var feedback = $('#feedback');
+        // var send_msg = $('#send_msg'); 
+        var focus = $('#focus'); 
+        var timeStamp = new Date();
+        var convId = $('#conv').val();
+        var chatBox = $('#chats');
+        var rcp = $('#rcp');
+        //getting from local storage
+        var cu = $('#user').val();
+        // $(document).ready(function(){
+        //     focus.setFocus=true;
+        //     message.focus=true;
+        // })
+        socket.user={};
+        socket.user.id=rcp.val();
+
+       
+
+        socket.on('message_sent', (data)=>{
+            
+            if(data.sender==cu){
+                chatBox.append(`
+                <div class="p-2  border-blue shadow radius mark  blue-50 float-right">
+                    <span>${data.message}</span><br>
+                    <span class="text-dark"><small>${data.time}</small></span>
+                </div><br><br><br>
+                `)
+            } else if(data.sender==rcp.val()) {
+                chatBox.append(`
+                <div class="p-2 border-green shadow radius mark  green-50  float-left">
+                    <span>${data.message}</span><br>
+                    <span class="text-dark"><small>${data.time}</small></span>
+                </div><br><br><br>
+                `)
+            }
+           
+        })
+        // socket.on('typing', (data)=>{
+        //     feedback.html('is typing');
+        // })
+    
+    function sendmsg (){
+                if(message.val()!=""){
+                    socket.emit('new_message', { sender: cu, message: message.val(), convId: convId, rcp: rcp.val()});
+                    message.val('');
+                }
+            }
+</script>
+</html>
