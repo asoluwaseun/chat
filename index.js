@@ -36,7 +36,7 @@ var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 //connection to database
-mongoose.connect("mongodb://admin:chatadmin1@ds113765.mlab.com:13765/chatapp");
+mongoose.connect("mongodb://admin:chatadmin1@ds155714.mlab.com:55714/application");
 // mongoose.connect("mongodb://localhost:27017/newChatData",{ useNewUrlParser: true })
 
 
